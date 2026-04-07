@@ -17,7 +17,7 @@ export default function ViewProfilePage() {
 
   return (
     <div style={{ paddingBottom: 80 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: var(--color-bg), borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--color-bg)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer' }}>←</button>
         <div style={{ display: 'flex', gap: 24, flex: 1, justifyContent: 'center' }}>
           <span style={{ fontWeight: 600, fontSize: 15, color: '#888' }}>Редактировать</span>
