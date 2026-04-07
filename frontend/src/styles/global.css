@@ -1,0 +1,253 @@
+/* Wave — Global Styles */
+/* Design: dark maroon header + cream background, Breeze-inspired */
+
+:root {
+  --color-bg: #F5EDE3;
+  --color-header: #3D1A1A;
+  --color-card: #FFFFFF;
+  --color-text: #1A1A1A;
+  --color-text-muted: #888888;
+  --color-accent: #E05C3A;       /* orange-red for accents */
+  --color-accent-dark: #C0432A;
+  --color-dark-btn: #1F0F0F;
+  --color-tag-bg: #EDE0D4;
+  --color-tag-text: #1A1A1A;
+  --color-profile-dark: #3D1A1A; /* dark sections in profile view */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius: 16px;
+  --tab-height: 72px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Buttons ---- */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--color-dark-btn);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--color-accent);
+  transition: transform 0.1s, box-shadow 0.1s;
+  text-decoration: none;
+}
+
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--color-accent);
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 24px;
+  background: transparent;
+  color: var(--color-text);
+  border: 1.5px solid #DDD;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ---- App Header ---- */
+.app-header {
+  background: var(--color-header);
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-header .logo {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.app-header .header-icons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.header-icon-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  position: relative;
+  font-size: 20px;
+}
+
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--color-accent);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ---- Bottom Nav ---- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: var(--tab-height);
+  background: var(--color-bg);
+  border-top: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 99;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 22px;
+  position: relative;
+  text-decoration: none;
+}
+
+.nav-item.active {
+  color: var(--color-text);
+}
+
+.nav-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--color-text);
+  border-radius: 50%;
+  margin-top: 4px;
+}
+
+/* ---- Cards ---- */
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* ---- Tags / Chips ---- */
+.tag {
+  display: inline-block;
+  padding: 8px 14px;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tag-dark {
+  background: var(--color-profile-dark);
+  color: #fff;
+}
+
+/* ---- Page content scroll area ---- */
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(var(--tab-height) + 16px);
+}
+
+/* ---- Input ---- */
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid #DDD;
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: var(--font);
+  outline: none;
+  background: #fff;
+  color: var(--color-text);
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  border-color: var(--color-accent);
+}
+
+/* ---- Section label ---- */
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 20px;
+  margin: 20px 0 8px;
+}
+
+/* ---- Divider ---- */
+.divider {
+  height: 1px;
+  background: rgba(0,0,0,0.06);
+  margin: 0 20px;
+}
+
+/* ---- Sleep mode badge ---- */
+.sleep-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}

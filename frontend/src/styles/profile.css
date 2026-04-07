@@ -1,0 +1,165 @@
+.profile-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  font-size: 16px;
+  color: var(--color-text-muted);
+}
+
+/* Dark header block */
+.profile-header {
+  background: var(--color-header);
+  color: #fff;
+  padding: 20px 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.profile-avatar-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.15);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: rgba(255,255,255,0.5);
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.profile-username {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 2px;
+}
+
+/* Action cards */
+.profile-action-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--color-card);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.profile-action-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.profile-action-icon.verify {
+  background: #3B82F6;
+  color: #fff;
+  font-size: 22px;
+}
+
+.profile-action-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-action-text strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.profile-action-text span {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.arrow {
+  color: var(--color-text-muted);
+  font-size: 16px;
+}
+
+/* Bio add section */
+.add-bio-section {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 1px;
+}
+
+.add-bio-hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* Menu card */
+.menu-card {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-family: var(--font);
+  color: var(--color-text);
+  text-align: left;
+}
+
+.menu-item span:nth-child(2) {
+  flex: 1;
+}
+
+/* Invite result */
+.invite-result {
+  margin-top: 12px;
+  background: var(--color-card);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.invite-result code {
+  display: block;
+  font-size: 12px;
+  color: var(--color-accent);
+  word-break: break-all;
+  margin-bottom: 4px;
+}
