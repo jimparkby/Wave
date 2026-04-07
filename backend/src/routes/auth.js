@@ -51,10 +51,20 @@ function verifyTelegramInitData(initData) {
 router.post('/telegram', async (req, res) => {
   try {
     const { initData, inviteCode, acceptedPrivacy } = req.body;
+    const skipChecks = process.env.SKIP_INVITE_CHECK === 'true';
 
     if (!initData) return res.status(400).json({ error: 'No initData' });
 
-    const telegramUser = verifyTelegramInitData(initData);
+    let telegramUser;
+    if (skipChecks) {
+      // TODO: remove before production — parse without HMAC verification
+      const params = new URLSearchParams(initData);
+      const userStr = params.get('user');
+      try { telegramUser = JSON.parse(userStr); } catch {}
+    } else {
+      telegramUser = verifyTelegramInitData(initData);
+    }
+
     if (!telegramUser) {
       return res.status(401).json({ error: 'Invalid Telegram auth' });
     }
@@ -70,10 +80,7 @@ router.post('/telegram', async (req, res) => {
     let user = userResult.rows[0];
 
     if (!user) {
-      // TODO: remove SKIP_INVITE_CHECK before production
-      const skipInvite = process.env.SKIP_INVITE_CHECK === 'true';
-
-      if (!skipInvite) {
+      if (!skipChecks) {
         if (!inviteCode) {
           return res.status(403).json({ error: 'Invite code required' });
         }
@@ -100,7 +107,7 @@ router.post('/telegram', async (req, res) => {
           telegramUser.first_name || '',
           telegramUser.last_name || '',
           telegramUser.photo_url || null,
-          inviteCode.trim().toUpperCase(),
+          inviteCode ? inviteCode.trim().toUpperCase() : null,
           true
         ]
       );
@@ -112,8 +119,9 @@ router.post('/telegram', async (req, res) => {
         [user.id]
       );
 
-      // Mark invite used
-      await markInviteUsed(inviteCode.trim().toUpperCase(), user.id);
+      if (!skipChecks && inviteCode) {
+        await markInviteUsed(inviteCode.trim().toUpperCase(), user.id);
+      }
     } else {
       // Existing user — update last_active and Telegram data
       await pool.query(
