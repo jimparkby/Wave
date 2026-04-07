@@ -7,63 +7,59 @@ const { validateInvite, markInviteUsed } = require('../utils/inviteGenerator');
 const router = express.Router();
 
 /**
- * Verify Telegram Login Widget data
- * https://core.telegram.org/widgets/login
+ * Verify Telegram Mini App initData
+ * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
  */
-function verifyTelegramAuth(data) {
-  const { hash, ...rest } = data;
+function verifyTelegramInitData(initData) {
+  const params = new URLSearchParams(initData);
+  const hash = params.get('hash');
+  if (!hash) return null;
+
+  params.delete('hash');
+
+  const dataCheckString = Array.from(params.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${v}`)
+    .join('\n');
+
   const secretKey = crypto
-    .createHash('sha256')
+    .createHmac('sha256', 'WebAppData')
     .update(process.env.TELEGRAM_BOT_TOKEN)
     .digest();
 
-  const checkString = Object.keys(rest)
-    .sort()
-    .map(k => `${k}=${rest[k]}`)
-    .join('\n');
-
-  const hmac = crypto
+  const computedHash = crypto
     .createHmac('sha256', secretKey)
-    .update(checkString)
+    .update(dataCheckString)
     .digest('hex');
 
-  if (hmac !== hash) return false;
+  if (computedHash !== hash) return null;
 
-  // Check auth is not older than 24h
-  const authDate = parseInt(rest.auth_date);
-  const now = Math.floor(Date.now() / 1000);
-  if (now - authDate > 86400) return false;
+  const userStr = params.get('user');
+  if (!userStr) return null;
 
-  return true;
+  try {
+    return JSON.parse(userStr);
+  } catch {
+    return null;
+  }
 }
 
 /**
  * POST /api/auth/telegram
- * Body: { telegramData, inviteCode, acceptedPrivacy }
- *
- * First-time flow:
- *   1. Validate invite code
- *   2. Verify Telegram auth
- *   3. Create or find user
- *   4. Mark invite used
- *   5. Return JWT
- *
- * Return flow (no invite needed):
- *   1. Verify Telegram auth
- *   2. Find existing user
- *   3. Return JWT
+ * Body: { initData, inviteCode, acceptedPrivacy }
  */
 router.post('/telegram', async (req, res) => {
   try {
-    const { telegramData, inviteCode, acceptedPrivacy } = req.body;
+    const { initData, inviteCode, acceptedPrivacy } = req.body;
 
-    if (!telegramData) return res.status(400).json({ error: 'No telegram data' });
+    if (!initData) return res.status(400).json({ error: 'No initData' });
 
-    if (!verifyTelegramAuth(telegramData)) {
+    const telegramUser = verifyTelegramInitData(initData);
+    if (!telegramUser) {
       return res.status(401).json({ error: 'Invalid Telegram auth' });
     }
 
-    const tgId = telegramData.id;
+    const tgId = telegramUser.id;
 
     // Check if user already exists
     let userResult = await pool.query(
@@ -96,10 +92,10 @@ router.post('/telegram', async (req, res) => {
          RETURNING *`,
         [
           tgId,
-          telegramData.username || null,
-          telegramData.first_name || '',
-          telegramData.last_name || '',
-          telegramData.photo_url || null,
+          telegramUser.username || null,
+          telegramUser.first_name || '',
+          telegramUser.last_name || '',
+          telegramUser.photo_url || null,
           inviteCode.trim().toUpperCase(),
           true
         ]
@@ -122,7 +118,7 @@ router.post('/telegram', async (req, res) => {
            first_name = $3,
            telegram_photo_url = COALESCE($4, telegram_photo_url)
          WHERE id = $1`,
-        [user.id, telegramData.username, telegramData.first_name, telegramData.photo_url]
+        [user.id, telegramUser.username, telegramUser.first_name, telegramUser.photo_url]
       );
     }
 
