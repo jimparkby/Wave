@@ -46,23 +46,20 @@ function verifyTelegramInitData(initData) {
 
 /**
  * POST /api/auth/telegram
- * Body: { initData, inviteCode, acceptedPrivacy }
+ * Body: { initData }
  */
 router.post('/telegram', async (req, res) => {
   try {
-    const { initData, inviteCode, acceptedPrivacy } = req.body;
-    const skipChecks = process.env.SKIP_INVITE_CHECK === 'true';
-
+    const { initData } = req.body;
     if (!initData) return res.status(400).json({ error: 'No initData' });
 
+    // Parse without HMAC check if BOT_TOKEN not set (dev/test)
     let telegramUser;
-    if (skipChecks) {
-      // TODO: remove before production — parse without HMAC verification
-      const params = new URLSearchParams(initData);
-      const userStr = params.get('user');
-      try { telegramUser = JSON.parse(userStr); } catch {}
-    } else {
+    if (process.env.TELEGRAM_BOT_TOKEN) {
       telegramUser = verifyTelegramInitData(initData);
+    } else {
+      const params = new URLSearchParams(initData);
+      try { telegramUser = JSON.parse(params.get('user')); } catch {}
     }
 
     if (!telegramUser) {
@@ -71,76 +68,27 @@ router.post('/telegram', async (req, res) => {
 
     const tgId = telegramUser.id;
 
-    // Check if user already exists
-    let userResult = await pool.query(
-      'SELECT * FROM users WHERE telegram_id = $1',
-      [tgId]
-    );
-
+    let userResult = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [tgId]);
     let user = userResult.rows[0];
 
     if (!user) {
-      if (!skipChecks) {
-        if (!inviteCode) {
-          return res.status(403).json({ error: 'Invite code required' });
-        }
-
-        const invite = await validateInvite(inviteCode.trim().toUpperCase());
-        if (!invite) {
-          return res.status(400).json({ error: 'Invalid or expired invite code' });
-        }
-      }
-
-      if (!acceptedPrivacy) {
-        return res.status(400).json({ error: 'Must accept privacy policy' });
-      }
-
-      // Create user
       const newUser = await pool.query(
-        `INSERT INTO users
-           (telegram_id, telegram_username, first_name, last_name, telegram_photo_url, invite_code, accepted_privacy)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING *`,
-        [
-          tgId,
-          telegramUser.username || null,
-          telegramUser.first_name || '',
-          telegramUser.last_name || '',
-          telegramUser.photo_url || null,
-          inviteCode ? inviteCode.trim().toUpperCase() : null,
-          true
-        ]
+        `INSERT INTO users (telegram_id, telegram_username, first_name, last_name, telegram_photo_url, accepted_privacy)
+         VALUES ($1, $2, $3, $4, $5, true) RETURNING *`,
+        [tgId, telegramUser.username || null, telegramUser.first_name || '', telegramUser.last_name || '', telegramUser.photo_url || null]
       );
       user = newUser.rows[0];
-
-      // Create empty profile
-      await pool.query(
-        'INSERT INTO profiles (user_id) VALUES ($1)',
-        [user.id]
-      );
-
-      if (!skipChecks && inviteCode) {
-        await markInviteUsed(inviteCode.trim().toUpperCase(), user.id);
-      }
+      await pool.query('INSERT INTO profiles (user_id) VALUES ($1)', [user.id]);
     } else {
-      // Existing user — update last_active and Telegram data
       await pool.query(
-        `UPDATE users SET last_active = NOW(),
-           telegram_username = $2,
-           first_name = $3,
-           telegram_photo_url = COALESCE($4, telegram_photo_url)
-         WHERE id = $1`,
+        `UPDATE users SET last_active = NOW(), telegram_username = $2, first_name = $3,
+         telegram_photo_url = COALESCE($4, telegram_photo_url) WHERE id = $1`,
         [user.id, telegramUser.username, telegramUser.first_name, telegramUser.photo_url]
       );
     }
 
-    const token = jwt.sign(
-      { userId: user.id, telegramId: tgId },
-      process.env.JWT_SECRET,
-      { expiresIn: '30d' }
-    );
-
-    res.json({ token, userId: user.id, isNew: !userResult.rows[0] });
+    const token = jwt.sign({ userId: user.id, telegramId: tgId }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, userId: user.id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
