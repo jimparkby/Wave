@@ -70,14 +70,18 @@ router.post('/telegram', async (req, res) => {
     let user = userResult.rows[0];
 
     if (!user) {
-      // New user — need invite code
-      if (!inviteCode) {
-        return res.status(403).json({ error: 'Invite code required' });
-      }
+      // TODO: remove SKIP_INVITE_CHECK before production
+      const skipInvite = process.env.SKIP_INVITE_CHECK === 'true';
 
-      const invite = await validateInvite(inviteCode.trim().toUpperCase());
-      if (!invite) {
-        return res.status(400).json({ error: 'Invalid or expired invite code' });
+      if (!skipInvite) {
+        if (!inviteCode) {
+          return res.status(403).json({ error: 'Invite code required' });
+        }
+
+        const invite = await validateInvite(inviteCode.trim().toUpperCase());
+        if (!invite) {
+          return res.status(400).json({ error: 'Invalid or expired invite code' });
+        }
       }
 
       if (!acceptedPrivacy) {
